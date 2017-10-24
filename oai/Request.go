@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // Request represents a request URL and query string to an OAI-PMH service
@@ -118,7 +119,11 @@ func (request *Request) Harvest(batchCallback func(*Response)) {
 // and return an OAI Response reference
 func (request *Request) Perform() (oaiResponse *Response) {
 
-	resp, err := http.Get(request.GetFullURL())
+	timeout := time.Duration(5 * time.Second)
+	client := http.Client{
+		Timeout: timeout,
+	}
+	resp, err := client.Get(request.GetFullURL())
 	if err != nil {
 		panic(err)
 	}
