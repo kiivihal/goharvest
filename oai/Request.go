@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -33,7 +34,7 @@ func (request *Request) GetFullURL() string {
 	add("verb", request.Verb)
 	add("set", request.Set)
 	add("metadataPrefix", request.MetadataPrefix)
-	add("resumptionToken", request.ResumptionToken)
+	add("resumptionToken", url.QueryEscape(request.ResumptionToken))
 	add("identifier", request.Identifier)
 	add("from", request.From)
 	add("until", request.Until)
