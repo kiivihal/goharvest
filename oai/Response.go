@@ -33,13 +33,18 @@ type Record struct {
 }
 
 type ListIdentifiers struct {
-	Headers         []Header `xml:"header"`
-	ResumptionToken string   `xml:"resumptionToken"`
+	Headers         []Header        `xml:"header"`
+	ResumptionToken ResumptionToken `xml:"resumptionToken"`
+}
+
+type ResumptionToken struct {
+	Token            string `xml:",chardata"`
+	CompleteListSize int    `xml:"completeListSize,attr"`
 }
 
 type ListRecords struct {
-	Records         []Record `xml:"record"`
-	ResumptionToken string   `xml:"resumptionToken"`
+	Records         []Record        `xml:"record"`
+	ResumptionToken ResumptionToken `xml:"resumptionToken"`
 }
 
 type GetRecord struct {

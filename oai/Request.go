@@ -11,14 +11,15 @@ import (
 
 // Request represents a request URL and query string to an OAI-PMH service
 type Request struct {
-	BaseURL         string
-	Set             string
-	MetadataPrefix  string
-	Verb            string
-	Identifier      string
-	ResumptionToken string
-	From            string
-	Until           string
+	BaseURL          string
+	Set              string
+	MetadataPrefix   string
+	Verb             string
+	Identifier       string
+	ResumptionToken  string
+	From             string
+	Until            string
+	CompleteListSize int
 }
 
 // GetFullURL represents the OAI Request in a string format
@@ -85,7 +86,7 @@ func (request *Request) ChannelHarvestIdentifiers(channels []chan *Header) {
 
 		// If there is no more resumption token, send nil to all
 		// the channels to signal the harvest is done
-		hasResumptionToken, _ := resp.ResumptionToken()
+		hasResumptionToken, _, _ := resp.ResumptionToken()
 		if !hasResumptionToken {
 			for _, channel := range channels {
 				channel <- nil
@@ -104,7 +105,7 @@ func (request *Request) Harvest(batchCallback func(*Response)) {
 	batchCallback(oaiResponse)
 
 	// Check for a resumptionToken
-	hasResumptionToken, resumptionToken := oaiResponse.ResumptionToken()
+	hasResumptionToken, resumptionToken, completeListSize := oaiResponse.ResumptionToken()
 
 	// Harvest further if there is a resumption token
 	if hasResumptionToken == true {
@@ -112,6 +113,7 @@ func (request *Request) Harvest(batchCallback func(*Response)) {
 		request.MetadataPrefix = ""
 		request.From = ""
 		request.ResumptionToken = resumptionToken
+		request.CompleteListSize = completeListSize
 		request.Harvest(batchCallback)
 	}
 }
@@ -120,7 +122,7 @@ func (request *Request) Harvest(batchCallback func(*Response)) {
 // and return an OAI Response reference
 func (request *Request) Perform() (oaiResponse *Response) {
 
-	timeout := time.Duration(5 * time.Second)
+	timeout := time.Duration(10 * time.Second)
 	client := http.Client{
 		Timeout: timeout,
 	}
@@ -149,19 +151,25 @@ func (request *Request) Perform() (oaiResponse *Response) {
 }
 
 // ResumptionToken determine the resumption token in this Response
-func (resp *Response) ResumptionToken() (hasResumptionToken bool, resumptionToken string) {
+func (resp *Response) ResumptionToken() (hasResumptionToken bool, resumptionToken string, completeListSize int) {
 	hasResumptionToken = false
 	resumptionToken = ""
+	completeListSize = 0
 	if resp == nil {
 		return
 	}
 
 	// First attempt to obtain a resumption token from a ListIdentifiers response
-	resumptionToken = resp.ListIdentifiers.ResumptionToken
+	resumptionToken = resp.ListIdentifiers.ResumptionToken.Token
+
+	if resumptionToken != "" {
+		completeListSize = resp.ListIdentifiers.ResumptionToken.CompleteListSize
+	}
 
 	// Then attempt to obtain a resumption token from a ListRecords response
 	if resumptionToken == "" {
-		resumptionToken = resp.ListRecords.ResumptionToken
+		resumptionToken = resp.ListRecords.ResumptionToken.Token
+		completeListSize = resp.ListRecords.ResumptionToken.CompleteListSize
 	}
 
 	// If a non-empty resumption token turned up it can safely inferred that...
