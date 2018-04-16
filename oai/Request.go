@@ -2,6 +2,7 @@ package oai
 
 import (
 	"encoding/xml"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -126,27 +127,51 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	client := http.Client{
 		Timeout: timeout,
 	}
-	resp, err := client.Get(request.GetFullURL())
+
+	err := retry(10, time.Second, func() error {
+
+		resp, err := client.Get(request.GetFullURL())
+		if err != nil {
+			return err
+		}
+
+		// Make sure the response body object will be closed after
+		// reading all the content body's data
+		defer resp.Body.Close()
+
+		s := resp.StatusCode
+		switch {
+		case s >= 500:
+			// Retry
+			return fmt.Errorf("server error: %v", s)
+		case s == 408:
+			// Retry
+			return fmt.Errorf("Timeout error: %v", s)
+		case s >= 400:
+			// Don't retry, it was client's fault
+			return stop{fmt.Errorf("client error: %v", s)}
+		default:
+			// Happy
+			// Read all the data
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return stop{err}
+			}
+
+			// Unmarshall all the data
+			err = xml.Unmarshal(body, &oaiResponse)
+			if err != nil {
+				return stop{err}
+			}
+
+			return nil
+		}
+
+	})
 	if err != nil {
+		// unable to harvest panic for now
 		panic(err)
 	}
-
-	// Make sure the response body object will be closed after
-	// reading all the content body's data
-	defer resp.Body.Close()
-
-	// Read all the data
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-
-	// Unmarshall all the data
-	err = xml.Unmarshal(body, &oaiResponse)
-	if err != nil {
-		panic(err)
-	}
-
 	return
 }
 
