@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -123,7 +124,7 @@ func (request *Request) Harvest(batchCallback func(*Response)) {
 // and return an OAI Response reference
 func (request *Request) Perform() (oaiResponse *Response) {
 
-	timeout := time.Duration(10 * time.Second)
+	timeout := time.Duration(60 * time.Second)
 	client := http.Client{
 		Timeout: timeout,
 	}
@@ -170,6 +171,7 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	})
 	if err != nil {
 		// unable to harvest panic for now
+		log.Printf("problem url: %s", request.GetFullURL())
 		panic(err)
 	}
 	return
