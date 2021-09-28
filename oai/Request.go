@@ -123,14 +123,12 @@ func (request *Request) Harvest(batchCallback func(*Response)) {
 // Perform an HTTP GET request using the OAI Requests fields
 // and return an OAI Response reference
 func (request *Request) Perform() (oaiResponse *Response) {
-
 	timeout := time.Duration(60 * time.Second)
 	client := http.Client{
 		Timeout: timeout,
 	}
 
 	err := retry(10, time.Second, func() error {
-
 		resp, err := client.Get(request.GetFullURL())
 		if err != nil {
 			return err
@@ -167,12 +165,11 @@ func (request *Request) Perform() (oaiResponse *Response) {
 
 			return nil
 		}
-
 	})
 	if err != nil {
-		// unable to harvest panic for now
-		log.Printf("problem url: %s", request.GetFullURL())
-		panic(err)
+		log.Printf("problem url: %s (%s)", request.GetFullURL(), err)
+		// TODO(kiivihal): refactor to return errors
+		// panic(err)
 	}
 	return
 }
