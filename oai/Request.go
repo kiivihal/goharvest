@@ -21,6 +21,8 @@ type Request struct {
 	ResumptionToken  string
 	From             string
 	Until            string
+	UserName         string // basic auth
+	Password         string // basic auth
 	CompleteListSize int
 }
 
@@ -129,7 +131,16 @@ func (request *Request) Perform() (oaiResponse *Response) {
 	}
 
 	err := retry(10, time.Second, func() error {
-		resp, err := client.Get(request.GetFullURL())
+		req, err := http.NewRequest(http.MethodGet, request.GetFullURL(), nil)
+		if err != nil {
+			return err
+		}
+
+		if request.UserName != "" && request.Password != "" {
+			req.SetBasicAuth(request.UserName, request.Password)
+		}
+
+		resp, err := client.Do(req)
 		if err != nil {
 			return err
 		}
