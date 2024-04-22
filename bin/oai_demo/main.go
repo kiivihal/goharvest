@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/renevanderark/goharvest/oai"
+	"github.com/kiivihal/goharvest/oai"
 	"os"
 )
 

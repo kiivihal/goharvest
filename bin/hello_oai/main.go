@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/renevanderark/goharvest/oai"
+	"github.com/kiivihal/goharvest/oai"
 )
 
 func main() {

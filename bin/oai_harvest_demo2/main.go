@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/renevanderark/goharvest/oai"
+	"github.com/kiivihal/goharvest/oai"
 )
 
 // Dump a snippet of the Record metadata
