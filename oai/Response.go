@@ -1,10 +1,6 @@
 // Data structure for the OAI-PMH protocol responses:
 package oai
 
-import (
-	"fmt"
-)
-
 type Header struct {
 	Status     string   `xml:"status,attr"`
 	Identifier string   `xml:"identifier"`
@@ -17,14 +13,14 @@ type Metadata struct {
 }
 
 // Formatter for Metadata content
-func (md Metadata) GoString() string { return fmt.Sprintf("%s", md.Body) }
+func (md Metadata) GoString() string { return string(md.Body) }
 
 type About struct {
 	Body []byte `xml:",innerxml"`
 }
 
 // Formatter for About content
-func (ab About) GoString() string { return fmt.Sprintf("%s", ab.Body) }
+func (ab About) GoString() string { return string(ab.Body) }
 
 type Record struct {
 	Header   Header   `xml:"header"`
@@ -77,7 +73,7 @@ type Description struct {
 }
 
 // Formatter for Description content
-func (desc Description) GoString() string { return fmt.Sprintf("%s", desc.Body) }
+func (desc Description) GoString() string { return string(desc.Body) }
 
 type Set struct {
 	SetSpec        string      `xml:"setSpec"`

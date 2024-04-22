@@ -3,7 +3,7 @@ package oai
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -110,7 +110,7 @@ func (request *Request) Harvest(batchCallback func(*Response)) {
 	hasResumptionToken, resumptionToken, completeListSize := oaiResponse.ResumptionToken()
 
 	// Harvest further if there is a resumption token
-	if hasResumptionToken == true {
+	if hasResumptionToken {
 		request.Set = ""
 		request.MetadataPrefix = ""
 		request.From = ""
@@ -145,14 +145,14 @@ func (request *Request) Perform() (oaiResponse *Response) {
 			return fmt.Errorf("server error: %v", s)
 		case s == 408:
 			// Retry
-			return fmt.Errorf("Timeout error: %v", s)
+			return fmt.Errorf("timeout error: %v", s)
 		case s >= 400:
 			// Don't retry, it was client's fault
 			return stop{fmt.Errorf("client error: %v", s)}
 		default:
 			// Happy
 			// Read all the data
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(io.Reader(resp.Body))
 			if err != nil {
 				return stop{err}
 			}

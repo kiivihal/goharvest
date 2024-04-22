@@ -3,12 +3,12 @@ package oai
 
 import (
 	"encoding/xml"
-	"io/ioutil"
+	"os"
 )
 
 // FromFile reads OAI PMH response XML from a file
 func FromFile(filename string) (oaiResponse *Response) {
-	bytes, err := ioutil.ReadFile(filename)
+	bytes, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}
