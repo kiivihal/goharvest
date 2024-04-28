@@ -26,6 +26,11 @@ type Record struct {
 	Header   Header   `xml:"header"`
 	Metadata Metadata `xml:"metadata"`
 	About    About    `xml:"about"`
+	Raw      []byte   `xml:",innerxml"`
+}
+
+func (r *Record) GoString() string {
+	return "<record>\n" + string(r.Raw) + "</record>\n"
 }
 
 type ListIdentifiers struct {
